@@ -24,7 +24,7 @@ export const asset: APIGatewayProxyHandlerV2 = async (event) => {
   }
 
   const params: AWS.DynamoDB.DocumentClient.GetItemInput = {
-    TableName: 'admin-y2123-api-citizen-metadata',
+    TableName: process.env.METADATA_TABLE!,
     Key: {
       name: `#${id}`,
     },

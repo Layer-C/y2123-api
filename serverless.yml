@@ -32,6 +32,7 @@ provider:
   region: us-east-1
   environment:
     PRODUCTS_TABLE: '${self:service}-${self:provider.stage}-products'
+    METADATA_TABLE: 'admin-y2123-api-citizen-metadata'
 
   iam:
     role:
@@ -40,6 +41,7 @@ provider:
           Action:
             - "dynamodb:PutItem"
             - "dynamodb:GetItem"
+            - "dynamodb:BatchGetItem"
             - "dynamodb:DeleteItem"
             - "dynamodb:Scan"
             - 'secretsmanager:GetSecretValue'

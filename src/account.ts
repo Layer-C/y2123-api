@@ -72,7 +72,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   });
   console.log(keys);
 
-  const tableName = process.env.tableName;
+  const tableName = process.env.METADATA_TABLE!;
   const params: AWS.DynamoDB.DocumentClient.BatchGetItemInput = {
     RequestItems: {
       [tableName!]: {
