@@ -1,10 +1,11 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayProxyHandlerV2, APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import AWS from "aws-sdk";
 import { v4 } from "uuid";
 import * as yup from "yup";
+import apiResponses from './common/apiResponses';
 
 const docClient = new AWS.DynamoDB.DocumentClient();
-const tableName = "ProductsTable";
+const tableName = process.env.PRODUCTS_TABLE!;
 const headers = {
   "content-type": "application/json",
 };
@@ -15,6 +16,23 @@ const schema = yup.object().shape({
   price: yup.number().required(),
   available: yup.bool().required(),
 });
+
+export const asset: APIGatewayProxyHandlerV2 = async (event) => {
+  const id = event.queryStringParameters?.id;
+  if (!id) {
+    return apiResponses._400({ message: 'invalid id' });
+  }
+
+  const params: AWS.DynamoDB.DocumentClient.GetItemInput = {
+    TableName: 'admin-y2123-api-citizen-metadata',
+    Key: {
+      name: `#${id}`,
+    },
+  };
+  const results = await docClient.get(params).promise();
+
+  return apiResponses._200(results.Item!);
+};
 
 export const createProduct = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {

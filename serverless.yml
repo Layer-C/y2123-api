@@ -5,18 +5,33 @@ frameworkVersion: "2"
 
 plugins:
   - serverless-plugin-typescript
-  - serverless-offline
   - serverless-lift
+  - serverless-domain-manager
+  - serverless-dotenv-plugin
 custom:
-  serverless-offline:
-    httpPort: 3003     # sets port for endpoints when running sls offline
+  domain:
+    dev: api-dev.y2123.io
+    prod: api.y2123.io
+  customDomain:
+    http:
+      domainName: ${self:custom.domain.${opt:stage, 'dev'}}
+      basePath: ""
+      stage: ${self:provider.stage}
+      certificateName: "*.y2123.io"
+      createRoute53Record: true
+      enabled: true
+      securityPolicy: tls_1_2
+      endpointType: regional
+      apiType: http
 
 provider:
   name: aws
   runtime: nodejs14.x
   lambdaHashingVersion: 20201221
-  stage: dev
+  stage: ${opt:stage,'dev'}
   region: us-east-1
+  environment:
+    PRODUCTS_TABLE: '${self:service}-${self:provider.stage}-products'
 
   iam:
     role:
@@ -94,12 +109,25 @@ functions:
           path: /products
           method: get
 
+  getAsset:
+    handler: src/handlers.asset
+    events:
+      - httpApi:
+          path: /asset
+          method: get
+  getAccount:
+    handler: src/account.handler
+    events:
+      - httpApi:
+          path: /account
+          method: get
+
 resources:
   Resources:
     ProductsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ProductsTable
+        TableName: ${self:provider.environment.PRODUCTS_TABLE}
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
