@@ -8,6 +8,7 @@ plugins:
   - serverless-lift
   - serverless-domain-manager
   - serverless-dotenv-plugin
+  - serverless-offline
 custom:
   domain:
     dev: api-dev.y2123.io
@@ -122,6 +123,12 @@ functions:
     events:
       - httpApi:
           path: /account
+          method: get
+  getClaim:
+    handler: src/claim.handler
+    events:
+      - http:
+          path: /claim
           method: get
 
 resources:
