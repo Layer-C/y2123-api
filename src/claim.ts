@@ -4,7 +4,7 @@ import ABI from "../contract/Y2123.json";
 import apiResponses from "./common/apiResponses";
 import AWS from "aws-sdk";
 import { generateEip712Hash } from "./common/eip712signature";
-const getClaimSecrets = require('./common/discordSecret.js').getClaimSecrets;
+const getClaimSecrets = require("./common/discordSecret.js").getClaimSecrets;
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
@@ -59,7 +59,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
   const eip712TypedDataHashed = generateEip712Hash(eip712TypedData);
   const claimSecrets = await getClaimSecrets();
-  const signingKey = new utils.SigningKey(claimSecrets.key3);
+  const signingKey = new utils.SigningKey("0x" + claimSecrets.key3);
 
   // Sign the message with the private key
   const signature = signingKey.signDigest(eip712TypedDataHashed);

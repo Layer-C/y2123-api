@@ -80,7 +80,6 @@ functions:
           method: post
     environment:
       QUEUE_URL: ${construct:commands.queueUrl}
-      
   createProduct:
     handler: src/handlers.createProduct
     events:
@@ -111,7 +110,6 @@ functions:
       - httpApi:
           path: /products
           method: get
-
   getAsset:
     handler: src/handlers.asset
     events:
@@ -127,7 +125,7 @@ functions:
   getClaim:
     handler: src/claim.handler
     events:
-      - http:
+      - httpApi:
           path: /claim
           method: get
 
