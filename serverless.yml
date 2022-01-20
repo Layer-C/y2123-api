@@ -32,8 +32,7 @@ provider:
   stage: ${opt:stage,'dev'}
   region: us-east-1
   environment:
-    PRODUCTS_TABLE: '${self:service}-${self:provider.stage}-products'
-    METADATA_TABLE: 'admin-y2123-api-citizen-metadata'
+    METADATA_TABLE: '${self:provider.stage}-metadata'
 
   iam:
     role:
@@ -48,7 +47,6 @@ provider:
             - 'secretsmanager:GetSecretValue'
           Resource:
             - '*'
-            - { "Fn::GetAtt": ["ProductsTable", "Arn"] }
 
 constructs:
   commands:
@@ -80,38 +78,9 @@ functions:
           method: post
     environment:
       QUEUE_URL: ${construct:commands.queueUrl}
-  createProduct:
-    handler: src/handlers.createProduct
-    events:
-      - httpApi:
-          path: /product
-          method: post
-  getProduct:
-    handler: src/handlers.getProduct
-    events:
-      - httpApi:
-          path: /product/{id}
-          method: get
-  updateProduct:
-    handler: src/handlers.updateProduct
-    events:
-      - httpApi:
-          path: /product/{id}
-          method: put
-  deleteProduct:
-    handler: src/handlers.deleteProduct
-    events:
-      - httpApi:
-          path: /product/{id}
-          method: delete
-  listProduct:
-    handler: src/handlers.listProduct
-    events:
-      - httpApi:
-          path: /products
-          method: get
+
   getAsset:
-    handler: src/handlers.asset
+    handler: src/asset.handler
     events:
       - httpApi:
           path: /asset
@@ -128,19 +97,3 @@ functions:
       - httpApi:
           path: /claim
           method: get
-
-resources:
-  Resources:
-    ProductsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:provider.environment.PRODUCTS_TABLE}
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        AttributeDefinitions:
-          - AttributeName: productID
-            AttributeType: S
-        KeySchema:
-          - AttributeName: productID
-            KeyType: HASH

@@ -65,5 +65,5 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const signature = signingKey.signDigest(eip712TypedDataHashed);
   const joinSignature = utils.joinSignature(signature);
 
-  return apiResponses._200({ signature, joinSignature });
+  return apiResponses._200({ joinSignature });
 };
