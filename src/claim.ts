@@ -5,7 +5,7 @@ import CLANS_ABI from "../contract/Clans.json";
 import apiResponses from "./common/apiResponses";
 import AWS from "aws-sdk";
 import { generateEip712Hash } from "./common/eip712signature";
-const getClaimSecrets = require("./common/discordSecret.js").getClaimSecrets;
+const getClaimSecrets = require("./common/secretsManager.js").getClaimSecrets;
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
