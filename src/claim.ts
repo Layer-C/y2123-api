@@ -1,6 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { ethers, utils } from "ethers";
-import ABI from "../contract/Y2123.json";
+import Y2123_ABI from "../contract/Y2123.json";
+import CLANS_ABI from "../contract/Clans.json";
 import apiResponses from "./common/apiResponses";
 import AWS from "aws-sdk";
 import { generateEip712Hash } from "./common/eip712signature";
@@ -10,15 +11,39 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
-  const contract = new ethers.Contract(process.env.Y2123_CONTRACT!, ABI.abi, provider);
-
-  const id = event.queryStringParameters?.id;
-  if (!id) {
+  const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT!, Y2123_ABI.abi, provider);
+  const clansContract = new ethers.Contract(process.env.CLANS_CONTRACT!, CLANS_ABI.abi, provider);
+  
+  const addr = event.queryStringParameters?.addr;
+  if (!addr) {
     return apiResponses._400({ message: "empty account id" });
   }
+  
+  let amount = 100;
 
-  const amount = 11;
-  const accountNonce = 1;
+  let donate = 0;
+  let donateParam = event.queryStringParameters?.donate;
+  if (!donateParam) {
+    donate = 0;
+  } else {
+    let donatePercentage = parseInt(donateParam);
+    if (donatePercentage > 100 || donatePercentage < 0) {
+      return apiResponses._400({ message: "donate percentage should range 0 to 100" });
+    }
+    donate = amount * donatePercentage / 100;
+    amount = amount - donate;
+  }
+
+  let accountNonce: number = 0;
+  try {
+    accountNonce = await clansContract.accountNonce(addr);
+  } catch (e) {
+    if (typeof e === 'string') {
+      return apiResponses._400({ message: e.toUpperCase() });
+    } else if (e instanceof Error) {
+      return apiResponses._400({ message: e.message });
+    }
+  }
 
   let domain = [
     { name: "name", type: "string" },
@@ -27,10 +52,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     { name: "verifyingContract", type: "address" },
   ];
 
-  //MyGoldz(uint256 amount,address account,uint256 nonce)
+  //Claim(address account,uint256 oxgnTokenClaim,uint256 oxgnTokenDonate,uint256 clanTokenClaim,address benificiaryOfTax,uint256 oxgnTokenTax,uint256 nonce)
   let claim = [
-    { name: "amount", type: "uint256" },
     { name: "account", type: "address" },
+    { name: "oxgnTokenClaim", type: "uint256" },
+    { name: "oxgnTokenDonate", type: "uint256" },
+    { name: "clanTokenClaim", type: "uint256" },
+    { name: "benificiaryOfTax", type: "uint256" },
+    { name: "oxgnTokenTax", type: "uint256" },
     { name: "nonce", type: "uint256" },
   ];
 
@@ -42,18 +71,22 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   };
 
   let claimData = {
-    amount: amount,
-    account: id,
+    account: addr,
+    oxgnTokenClaim: amount,
+    oxgnTokenDonate: donate,
+    clanTokenClaim: 1,
+    benificiaryOfTax: "0x32bAD1fB90f2193854E3AC8EfCc39fc87d8A4Ce4",
+    oxgnTokenTax: 1,
     nonce: accountNonce,
   };
 
   let eip712TypedData = {
     types: {
       EIP712Domain: domain,
-      MyGoldz: claim,
+      Claim: claim,
     },
     domain: domainData,
-    primaryType: "MyGoldz",
+    primaryType: "Claim",
     message: claimData,
   };
 

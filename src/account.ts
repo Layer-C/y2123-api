@@ -1,6 +1,6 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { ethers } from 'ethers';
-import ABI from '../contract/Y2123.json';
+import Y2123_ABI from '../contract/Y2123.json';
 import apiResponses from './common/apiResponses';
 import AWS from 'aws-sdk';
 
@@ -35,7 +35,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   );
   const contract = new ethers.Contract(
     process.env.Y2123_CONTRACT!,
-    ABI.abi,
+    Y2123_ABI.abi,
     provider
   );
 

@@ -11,16 +11,6 @@ let __discordSecrets = undefined;
 let __claimSecrets = undefined;
 
 /**
- * Gets the Discord secrets (public key, client ID, etc.) for use in our lambdas.
- * <p>The code assumes the returned secrets object has the following fields:
- * <ul>
- * <li>CLIENT_ID</li>
- * <li>CLIENT_PUBLIC_KEY</li>
- * <li>GUILD_ID</li>
- * <li>DISCORD_TOKEN</li>
- * </ul>
- * </p>
- * 
  * @returns The Discord secrets to be used.
  */
 module.exports.getDiscordSecrets = async () => {

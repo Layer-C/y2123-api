@@ -7,8 +7,8 @@ const {
   verifyKey,
 } = require('discord-interactions');
 const getDiscordSecrets =
-  require('./common/discordSecret.js').getDiscordSecrets;
-const apiKeyName = require('./common/discordSecret.js').apiKeyName;
+  require('./common/secretsManager.js').getDiscordSecrets;
+const apiKeyName = require('./common/secretsManager.js').apiKeyName;
 const { SQS } = require('aws-sdk');
 
 const sqs = new SQS();
