@@ -1,20 +1,20 @@
-import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { ethers, utils } from "ethers";
-import Y2123_ABI from "../contract/Y2123.json";
-import CLANS_ABI from "../contract/Clans.json";
-import apiResponses from "./common/apiResponses";
-import AWS from "aws-sdk";
-import { generateEip712Hash } from "./common/eip712signature";
-const getClaimSecrets = require("./common/secretsManager.js").getClaimSecrets;
+const { ethers, utils } = require("ethers");
+const apiResponses = require('./common/apiResponses');
+const AWS = require('aws-sdk');
+const generateEip712Hash = require("./common/eip712signature.js").generateEip712Hash;
+const getClaimSecrets = require('./common/secretsManager.js').getClaimSecrets;
+
+const Y2123_ABI = require("../contract/Y2123.json");
+const CLANS_ABI = require("../contract/Clans.json");
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-export const handler: APIGatewayProxyHandlerV2 = async (event) => {
+module.exports.handler = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
-  const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT!, Y2123_ABI.abi, provider);
-  const clansContract = new ethers.Contract(process.env.CLANS_CONTRACT!, CLANS_ABI.abi, provider);
+  const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT, Y2123_ABI.abi, provider);
+  const clansContract = new ethers.Contract(process.env.CLANS_CONTRACT, CLANS_ABI.abi, provider);
   
-  const addr = event.queryStringParameters?.addr;
+  const addr = event.queryStringParameters.addr;
   if (!addr) {
     return apiResponses._400({ message: "empty account id" });
   }
@@ -22,7 +22,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   let amount = 100;
 
   let donate = 0;
-  let donateParam = event.queryStringParameters?.donate;
+  let donateParam = event.queryStringParameters.donate;
   if (!donateParam) {
     donate = 0;
   } else {
@@ -34,7 +34,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     amount = amount - donate;
   }
 
-  let accountNonce: number = 0;
+  let accountNonce = 0;
   try {
     accountNonce = await clansContract.accountNonce(addr);
   } catch (e) {
@@ -66,8 +66,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   let domainData = {
     name: "y2123",
     version: "1.0",
-    chainId: parseInt(process.env.CHAIN_ID!, 10),
-    verifyingContract: process.env.CLANS_CONTRACT!,
+    chainId: parseInt(process.env.CHAIN_ID, 10),
+    verifyingContract: process.env.CLANS_CONTRACT,
   };
 
   let claimData = {
@@ -98,5 +98,5 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const signature = signingKey.signDigest(eip712TypedDataHashed);
   const joinSignature = utils.joinSignature(signature);
 
-  return apiResponses._200({ joinSignature });
+  return apiResponses._200({ joinSignature, amount:amount, donate:donate });
 };

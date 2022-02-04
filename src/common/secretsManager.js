@@ -1,7 +1,7 @@
 const SecretsManager = require("aws-sdk").SecretsManager;
 
-const discordBotAPIKeyName = 'dev/y2123_bot';
-const claimKey = 'dev/claim';
+const discordBotAPIKeyName = "dev/y2123_bot";
+const claimKey = "dev/claim";
 const secretsManager = new SecretsManager();
 
 /**
@@ -16,9 +16,11 @@ let __claimSecrets = undefined;
 module.exports.getDiscordSecrets = async () => {
   if (!__discordSecrets) {
     try {
-      const discordApiKeys = await secretsManager.getSecretValue({
-        SecretId: discordBotAPIKeyName,
-      }).promise();
+      const discordApiKeys = await secretsManager
+        .getSecretValue({
+          SecretId: discordBotAPIKeyName,
+        })
+        .promise();
       if (discordApiKeys.SecretString) {
         __discordSecrets = JSON.parse(discordApiKeys.SecretString);
       }
@@ -34,9 +36,11 @@ module.exports.apiKeyName = discordBotAPIKeyName;
 module.exports.getClaimSecrets = async () => {
   if (!__claimSecrets) {
     try {
-      const keys = await secretsManager.getSecretValue({
-        SecretId: claimKey,
-      }).promise();
+      const keys = await secretsManager
+        .getSecretValue({
+          SecretId: claimKey,
+        })
+        .promise();
       if (keys.SecretString) {
         __claimSecrets = JSON.parse(keys.SecretString);
       }

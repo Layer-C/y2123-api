@@ -1,10 +1,9 @@
 service: y2123-api
 app: core
 org: shankqr
-frameworkVersion: "2"
+frameworkVersion: "3"
 
 plugins:
-  - serverless-plugin-typescript
   - serverless-lift
   - serverless-domain-manager
   - serverless-dotenv-plugin

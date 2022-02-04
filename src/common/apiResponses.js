@@ -1,11 +1,11 @@
 const apiResponses = {
-  _200: (body: { [key: string]: any }) => {
+  _200: (body) => {
       return {
           statusCode: 200,
           body: JSON.stringify(body, null, 2),
       };
   },
-  _400: (body: { [key: string]: any }) => {
+  _400: (body) => {
       return {
           statusCode: 400,
           body: JSON.stringify(body, null, 2),
@@ -13,4 +13,4 @@ const apiResponses = {
   },
 };
 
-export default apiResponses;
+module.exports.apiResponses;

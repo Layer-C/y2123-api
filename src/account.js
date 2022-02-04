@@ -1,23 +1,9 @@
-import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
-import { ethers } from 'ethers';
-import Y2123_ABI from '../contract/Y2123.json';
-import apiResponses from './common/apiResponses';
-import AWS from 'aws-sdk';
+const apiResponses = require('./common/apiResponses.js');
+const AWS = require('aws-sdk');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-interface UnstakedNft {
-  name: string;
-  image: string;
-  link?: string;
-  dailyReward?: string;
-}
-
-interface Key {
-  name: string;
-}
-
-const dailyRewardCalculator = (id: string): string => {
+const dailyRewardCalculator = (id) => {
   if (parseInt(id) < 500) {
     return '4';
   } else if (parseInt(id) < 3000) {
@@ -25,11 +11,11 @@ const dailyRewardCalculator = (id: string): string => {
   } else if (parseInt(id) < 10000) {
     return '2';
   }
-
   return '1';
 };
 
-export const handler: APIGatewayProxyHandlerV2 = async (event) => {
+module.exports.handler = async (event) => {
+  /*
   const provider = new ethers.providers.JsonRpcProvider(
     process.env.ALCHEMY_API
   );
@@ -97,6 +83,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     });
   });
   console.log(unstakedNft);
-
-  return apiResponses._200(unstakedNft);
+  */
+  return apiResponses._200("OK");
+  
 };
