@@ -1,8 +1,8 @@
 const { ethers, utils } = require("ethers");
-const apiResponses = require('./common/apiResponses');
-const AWS = require('aws-sdk');
+const apiResponses = require("./common/apiResponses");
+const AWS = require("aws-sdk");
 const generateEip712Hash = require("./common/eip712signature.js").generateEip712Hash;
-const getClaimSecrets = require('./common/secretsManager.js').getClaimSecrets;
+const getClaimSecrets = require("./common/secretsManager.js").getClaimSecrets;
 
 const Y2123_ABI = require("../contract/Y2123.json");
 const CLANS_ABI = require("../contract/Clans.json");
@@ -13,12 +13,15 @@ module.exports.handler = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
   const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT, Y2123_ABI.abi, provider);
   const clansContract = new ethers.Contract(process.env.CLANS_CONTRACT, CLANS_ABI.abi, provider);
-  
+
   const addr = event.queryStringParameters.addr;
   if (!addr) {
-    return apiResponses._400({ message: "empty account id" });
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "empty account id" }, null, 2),
+    };
   }
-  
+
   let amount = 100;
 
   let donate = 0;
@@ -28,9 +31,12 @@ module.exports.handler = async (event) => {
   } else {
     let donatePercentage = parseInt(donateParam);
     if (donatePercentage > 100 || donatePercentage < 0) {
-      return apiResponses._400({ message: "donate percentage should range 0 to 100" });
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "donate percentage should range 0 to 100" }, null, 2),
+      };
     }
-    donate = amount * donatePercentage / 100;
+    donate = (amount * donatePercentage) / 100;
     amount = amount - donate;
   }
 
@@ -38,10 +44,18 @@ module.exports.handler = async (event) => {
   try {
     accountNonce = await clansContract.accountNonce(addr);
   } catch (e) {
-    if (typeof e === 'string') {
-      return apiResponses._400({ message: e.toUpperCase() });
+    if (typeof e === "string") {
+      //return apiResponses._400({ message: e.toUpperCase() });
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "donate percentage should range 0 to 100" }, null, 2),
+      };
     } else if (e instanceof Error) {
-      return apiResponses._400({ message: e.message });
+      //return apiResponses._400({ message: e.message });
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "donate percentage should range 0 to 100" }, null, 2),
+      };
     }
   }
 
@@ -98,5 +112,9 @@ module.exports.handler = async (event) => {
   const signature = signingKey.signDigest(eip712TypedDataHashed);
   const joinSignature = utils.joinSignature(signature);
 
-  return apiResponses._200({ joinSignature, amount:amount, donate:donate });
+  //return apiResponses._200({ joinSignature, amount: amount, donate: donate });
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ joinSignature, amount: amount, donate: donate }, null, 2),
+  };
 };
