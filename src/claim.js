@@ -20,6 +20,9 @@ module.exports.handler = async (event) => {
   }
 
   let amount = 100;
+  let clanTokenClaimVal = 1;
+  let benificiaryOfTaxVal = "0x32bAD1fB90f2193854E3AC8EfCc39fc87d8A4Ce4";
+  let oxgnTokenTaxVal = 1;
 
   let donate = 0;
   let donateParam = event.queryStringParameters.donate;
@@ -74,9 +77,9 @@ module.exports.handler = async (event) => {
     account: addr,
     oxgnTokenClaim: amount,
     oxgnTokenDonate: donate,
-    clanTokenClaim: 1,
-    benificiaryOfTax: "0x32bAD1fB90f2193854E3AC8EfCc39fc87d8A4Ce4",
-    oxgnTokenTax: 1,
+    clanTokenClaim: clanTokenClaimVal,
+    benificiaryOfTax: benificiaryOfTaxVal,
+    oxgnTokenTax: oxgnTokenTaxVal,
     nonce: accountNonce,
   };
 
@@ -98,5 +101,12 @@ module.exports.handler = async (event) => {
   const signature = signingKey.signDigest(eip712TypedDataHashed);
   const joinSignature = utils.joinSignature(signature);
 
-  return apiResponses._200({ joinSignature, amount:amount, donate:donate });
+  return apiResponses._200({ joinSignature, 
+    oxgnTokenClaim:amount, 
+    oxgnTokenDonate:donate,
+    clanTokenClaim:clanTokenClaimVal,
+    benificiaryOfTax:benificiaryOfTaxVal,
+    oxgnTokenTax:oxgnTokenTaxVal,
+    nonce:accountNonce,
+  });
 };
