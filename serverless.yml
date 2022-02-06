@@ -52,25 +52,18 @@ constructs:
   commands:
     type: queue
     worker:
-      handler: src/handler.sender
+      handler: src/discord.sender
 
 functions:
   discordHello:
-    handler: src/handler.discordHandler
+    handler: src/discord.discordHandler
     reservedConcurrency: 1
     events: 
       - httpApi:
           path: /discord
           method: post
-  hello:
-    handler: src/handler.hello
-    reservedConcurrency: 1
-    events:
-      - httpApi:
-          path: /hello
-          method: get
   discordEndpoint:
-    handler: src/handler.endpoint
+    handler: src/discord.endpoint
     reservedConcurrency: 1
     events:
       - httpApi:
