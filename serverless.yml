@@ -27,12 +27,11 @@ custom:
 provider:
   name: aws
   runtime: nodejs14.x
-  lambdaHashingVersion: 20201221
   stage: ${opt:stage,'dev'}
   region: us-east-1
   environment:
-    METADATA_TABLE: '${self:provider.stage}-metadata'
-    CLANS_METADATA_TABLE: '${self:provider.stage}-clans-metadata'
+    METADATA_TABLE: "${self:provider.stage}-metadata"
+    CLANS_METADATA_TABLE: "${self:provider.stage}-clans-metadata"
 
   iam:
     role:
@@ -44,9 +43,9 @@ provider:
             - "dynamodb:BatchGetItem"
             - "dynamodb:DeleteItem"
             - "dynamodb:Scan"
-            - 'secretsmanager:GetSecretValue'
+            - "secretsmanager:GetSecretValue"
           Resource:
-            - '*'
+            - "*"
 
 constructs:
   commands:
@@ -58,7 +57,7 @@ functions:
   discordHello:
     handler: src/discord.discordHandler
     reservedConcurrency: 1
-    events: 
+    events:
       - httpApi:
           path: /discord
           method: post

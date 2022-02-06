@@ -61,7 +61,7 @@ module.exports.handler = async (event) => {
     { name: "oxgnTokenClaim", type: "uint256" },
     { name: "oxgnTokenDonate", type: "uint256" },
     { name: "clanTokenClaim", type: "uint256" },
-    { name: "benificiaryOfTax", type: "uint256" },
+    { name: "benificiaryOfTax", type: "address" },
     { name: "oxgnTokenTax", type: "uint256" },
     { name: "nonce", type: "uint256" },
   ];
@@ -107,6 +107,6 @@ module.exports.handler = async (event) => {
     clanTokenClaim:clanTokenClaimVal,
     benificiaryOfTax:benificiaryOfTaxVal,
     oxgnTokenTax:oxgnTokenTaxVal,
-    nonce:accountNonce,
+    nonce:accountNonce.toString(),
   });
 };
