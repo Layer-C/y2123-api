@@ -10,9 +10,9 @@ module.exports.handler = async (event) => {
   }
 
   const params = {
-    TableName: process.env.METADATA_TABLE,
+    TableName: process.env.CLANS_METADATA_TABLE,
     Key: {
-      name: `Y2123#${id}`,
+      name: `CLAN#${id}`,
     },
   };
   const results = await dynamoDb.get(params).promise();

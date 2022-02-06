@@ -32,6 +32,7 @@ provider:
   region: us-east-1
   environment:
     METADATA_TABLE: '${self:provider.stage}-metadata'
+    CLANS_METADATA_TABLE: '${self:provider.stage}-clans-metadata'
 
   iam:
     role:
@@ -83,6 +84,12 @@ functions:
     events:
       - httpApi:
           path: /asset
+          method: get
+  getAssetClans:
+    handler: src/asset-clans.handler
+    events:
+      - httpApi:
+          path: /asset-clans
           method: get
   getAccount:
     handler: src/account.handler

@@ -1,4 +1,4 @@
-const apiResponses = require('./common/apiResponses.js');
+const apiResponses = require('./common/apiResponses.js').apiResponses;
 const AWS = require('aws-sdk');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
@@ -85,5 +85,4 @@ module.exports.handler = async (event) => {
   console.log(unstakedNft);
   */
   return apiResponses._200("OK");
-  
 };

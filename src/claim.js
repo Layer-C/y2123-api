@@ -1,5 +1,5 @@
 const { ethers, utils } = require("ethers");
-const apiResponses = require("./common/apiResponses");
+const apiResponses = require("./common/apiResponses").apiResponses;
 const AWS = require("aws-sdk");
 const generateEip712Hash = require("./common/eip712signature.js").generateEip712Hash;
 const getClaimSecrets = require("./common/secretsManager.js").getClaimSecrets;
@@ -16,10 +16,7 @@ module.exports.handler = async (event) => {
 
   const addr = event.queryStringParameters.addr;
   if (!addr) {
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "empty account id" }, null, 2),
-    };
+    return apiResponses._400({ message: "empty account id" });
   }
 
   let amount = 100;
@@ -31,10 +28,7 @@ module.exports.handler = async (event) => {
   } else {
     let donatePercentage = parseInt(donateParam);
     if (donatePercentage > 100 || donatePercentage < 0) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "donate percentage should range 0 to 100" }, null, 2),
-      };
+      return apiResponses._400({ message: "donate percentage should range 0 to 100" });
     }
     donate = (amount * donatePercentage) / 100;
     amount = amount - donate;
@@ -45,17 +39,9 @@ module.exports.handler = async (event) => {
     accountNonce = await clansContract.accountNonce(addr);
   } catch (e) {
     if (typeof e === "string") {
-      //return apiResponses._400({ message: e.toUpperCase() });
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "donate percentage should range 0 to 100" }, null, 2),
-      };
+      return apiResponses._400({ message: e.toUpperCase() });
     } else if (e instanceof Error) {
-      //return apiResponses._400({ message: e.message });
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "donate percentage should range 0 to 100" }, null, 2),
-      };
+      return apiResponses._400({ message: e.message });
     }
   }
 
@@ -112,9 +98,5 @@ module.exports.handler = async (event) => {
   const signature = signingKey.signDigest(eip712TypedDataHashed);
   const joinSignature = utils.joinSignature(signature);
 
-  //return apiResponses._200({ joinSignature, amount: amount, donate: donate });
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ joinSignature, amount: amount, donate: donate }, null, 2),
-  };
+  return apiResponses._200({ joinSignature, amount:amount, donate:donate });
 };
