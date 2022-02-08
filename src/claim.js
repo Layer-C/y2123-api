@@ -1,5 +1,6 @@
 const { ethers, utils } = require("ethers");
-const apiResponses = require("./common/apiResponses").apiResponses;
+const apiResponses = require("./common/apiHelper").apiResponses;
+const apiError = require("./common/apiHelper").apiError;
 const AWS = require("aws-sdk");
 const generateEip712Hash = require("./common/eip712signature.js").generateEip712Hash;
 const getClaimSecrets = require("./common/secretsManager.js").getClaimSecrets;
@@ -41,12 +42,24 @@ module.exports.handler = async (event) => {
   try {
     accountNonce = await clansContract.accountNonce(addr);
   } catch (e) {
-    if (typeof e === "string") {
-      return apiResponses._400({ message: e.toUpperCase() });
-    } else if (e instanceof Error) {
-      return apiResponses._400({ message: e.message });
-    }
+    apiError._400(e);
   }
+
+  let stakedTokens;
+  try {
+    stakedTokens = await clansContract.stakedTokensOfOwner(process.env.Y2123_CONTRACT, addr);
+  } catch (e) {
+    apiError._400(e);
+  }
+  console.log(stakedTokens);
+
+  let claimable;
+  try {
+    claimable = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);
+  } catch (e) {
+    apiError._400(e);
+  }
+  console.log(claimable[1]);
 
   let domain = [
     { name: "name", type: "string" },
@@ -101,12 +114,13 @@ module.exports.handler = async (event) => {
   const signature = signingKey.signDigest(eip712TypedDataHashed);
   const joinSignature = utils.joinSignature(signature);
 
-  return apiResponses._200({ joinSignature, 
+  return apiResponses._200({
     oxgnTokenClaim:amount, 
     oxgnTokenDonate:donate,
     clanTokenClaim:clanTokenClaimVal,
     benificiaryOfTax:benificiaryOfTaxVal,
     oxgnTokenTax:oxgnTokenTaxVal,
+    joinSignature,
     nonce:accountNonce.toString(),
   });
 };

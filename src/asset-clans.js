@@ -1,4 +1,4 @@
-const apiResponses = require('./common/apiResponses.js').apiResponses;
+const apiResponses = require('./common/apiHelper.js').apiResponses;
 const AWS = require('aws-sdk');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
