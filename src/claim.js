@@ -10,6 +10,10 @@ const CLANS_ABI = require("../contract/Clans.json");
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
+const seconds_since_epoch = () => {
+  return Math.floor( Date.now() / 1000 );
+}
+
 module.exports.handler = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
   const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT, Y2123_ABI.abi, provider);
@@ -21,9 +25,9 @@ module.exports.handler = async (event) => {
   }
 
   let amount = 100;
-  let clanTokenClaimVal = 1;
+  let clanTokenClaimVal = 0;
   let benificiaryOfTaxVal = "0x32bAD1fB90f2193854E3AC8EfCc39fc87d8A4Ce4";
-  let oxgnTokenTaxVal = 1;
+  let oxgnTokenTaxVal = 0;
 
   let donate = 0;
   let donateParam = event.queryStringParameters.donate;
@@ -68,7 +72,7 @@ module.exports.handler = async (event) => {
     { name: "verifyingContract", type: "address" },
   ];
 
-  //Claim(address account,uint256 oxgnTokenClaim,uint256 oxgnTokenDonate,uint256 clanTokenClaim,address benificiaryOfTax,uint256 oxgnTokenTax,uint256 nonce)
+  //Claim(address account,uint256 oxgnTokenClaim,uint256 oxgnTokenDonate,uint256 clanTokenClaim,address benificiaryOfTax,uint256 oxgnTokenTax,uint256 nonce,uint256 timestamp)
   let claim = [
     { name: "account", type: "address" },
     { name: "oxgnTokenClaim", type: "uint256" },
@@ -77,6 +81,7 @@ module.exports.handler = async (event) => {
     { name: "benificiaryOfTax", type: "address" },
     { name: "oxgnTokenTax", type: "uint256" },
     { name: "nonce", type: "uint256" },
+    { name: "timestamp", type: "uint256" },
   ];
 
   let domainData = {
@@ -86,6 +91,9 @@ module.exports.handler = async (event) => {
     verifyingContract: process.env.CLANS_CONTRACT,
   };
 
+  const serverTimestamp = seconds_since_epoch();
+  console.log(serverTimestamp);
+
   let claimData = {
     account: addr,
     oxgnTokenClaim: amount,
@@ -94,6 +102,7 @@ module.exports.handler = async (event) => {
     benificiaryOfTax: benificiaryOfTaxVal,
     oxgnTokenTax: oxgnTokenTaxVal,
     nonce: accountNonce,
+    timestamp: serverTimestamp
   };
 
   let eip712TypedData = {
@@ -120,7 +129,7 @@ module.exports.handler = async (event) => {
     clanTokenClaim:clanTokenClaimVal,
     benificiaryOfTax:benificiaryOfTaxVal,
     oxgnTokenTax:oxgnTokenTaxVal,
+    timestamp:serverTimestamp,
     joinSignature,
-    nonce:accountNonce.toString(),
   });
 };
