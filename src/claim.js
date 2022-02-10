@@ -2,8 +2,8 @@ const { ethers, utils } = require("ethers");
 const apiResponses = require("./common/apiHelper").apiResponses;
 const apiError = require("./common/apiHelper").apiError;
 const AWS = require("aws-sdk");
-const generateEip712Hash = require("./common/eip712signature.js").generateEip712Hash;
-const getClaimSecrets = require("./common/secretsManager.js").getClaimSecrets;
+const generateEip712Hash = require("./common/eip712signature").generateEip712Hash;
+const getClaimSecrets = require("./common/secretsManager").getClaimSecrets;
 
 const Y2123_ABI = require("../contract/Y2123.json");
 const CLANS_ABI = require("../contract/Clans.json");
@@ -11,8 +11,8 @@ const CLANS_ABI = require("../contract/Clans.json");
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 const seconds_since_epoch = () => {
-  return Math.floor( Date.now() / 1000 );
-}
+  return Math.floor(Date.now() / 1000);
+};
 
 module.exports.handler = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
@@ -25,20 +25,19 @@ module.exports.handler = async (event) => {
   }
 
   let amount = 100;
-  let clanTokenClaimVal = 0;
-  let benificiaryOfTaxVal = "0x32bAD1fB90f2193854E3AC8EfCc39fc87d8A4Ce4";
-  let oxgnTokenTaxVal = 0;
+  let clanTokenClaimVal = 1;
+  let benificiaryOfTaxVal = "0x043f292c37e1De0B53951d1e478b59BC5358F359";
+  let oxgnTokenTaxVal = 1;
 
   let donate = 0;
   let donateParam = event.queryStringParameters.donate;
   if (!donateParam) {
     donate = 0;
   } else {
-    let donatePercentage = parseInt(donateParam);
-    if (donatePercentage > 100 || donatePercentage < 0) {
-      return apiResponses._400({ message: "donate percentage should range 0 to 100" });
+    if (parseInt(donateParam) > amount || parseInt(donateParam) < 0) {
+      return apiResponses._400({ message: "donate should be lesser then claim" });
     }
-    donate = (amount * donatePercentage) / 100;
+    donate = parseInt(donateParam);
     amount = amount - donate;
   }
 
@@ -55,15 +54,14 @@ module.exports.handler = async (event) => {
   } catch (e) {
     apiError._400(e);
   }
-  console.log(stakedTokens);
+  stakedTokens.forEach(element => console.log(element.toBigInt()));
 
-  let claimable;
   try {
-    claimable = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);
+    var [staked, claimable] = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);
+    claimable.forEach(element => console.log(element.toBigInt()));
   } catch (e) {
     apiError._400(e);
   }
-  console.log(claimable[1]);
 
   let domain = [
     { name: "name", type: "string" },
@@ -102,7 +100,7 @@ module.exports.handler = async (event) => {
     benificiaryOfTax: benificiaryOfTaxVal,
     oxgnTokenTax: oxgnTokenTaxVal,
     nonce: accountNonce,
-    timestamp: serverTimestamp
+    timestamp: serverTimestamp,
   };
 
   let eip712TypedData = {
@@ -124,12 +122,12 @@ module.exports.handler = async (event) => {
   const joinSignature = utils.joinSignature(signature);
 
   return apiResponses._200({
-    oxgnTokenClaim:amount, 
-    oxgnTokenDonate:donate,
-    clanTokenClaim:clanTokenClaimVal,
-    benificiaryOfTax:benificiaryOfTaxVal,
-    oxgnTokenTax:oxgnTokenTaxVal,
-    timestamp:serverTimestamp,
+    oxgnTokenClaim: amount,
+    oxgnTokenDonate: donate,
+    clanTokenClaim: clanTokenClaimVal,
+    benificiaryOfTax: benificiaryOfTaxVal,
+    oxgnTokenTax: oxgnTokenTaxVal,
+    timestamp: serverTimestamp,
     joinSignature,
   });
 };

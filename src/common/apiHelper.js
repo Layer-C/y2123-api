@@ -1,4 +1,4 @@
-module.exports.apiResponses = {
+const apiResponses = {
   _200: (body) => {
     return {
       statusCode: 200,
@@ -13,7 +13,7 @@ module.exports.apiResponses = {
   },
 };
 
-module.exports.apiError = {
+const apiError = {
   _400: (e) => {
     if (typeof e === "string") {
       return apiResponses._400({ message: e.toUpperCase() });
@@ -21,4 +21,9 @@ module.exports.apiError = {
       return apiResponses._400({ message: e.message });
     }
   }
+};
+
+module.exports = {
+  apiResponses,
+  apiError,
 };
