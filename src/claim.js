@@ -1,14 +1,14 @@
 const { ethers, utils } = require("ethers");
 const apiResponses = require("./common/apiHelper").apiResponses;
 const apiError = require("./common/apiHelper").apiError;
-const AWS = require("aws-sdk");
+//const AWS = require("aws-sdk");
 const generateEip712Hash = require("./common/eip712signature").generateEip712Hash;
 const getClaimSecrets = require("./common/secretsManager").getClaimSecrets;
 
-const Y2123_ABI = require("../contract/Y2123.json");
+//const Y2123_ABI = require("../contract/Y2123.json");
 const CLANS_ABI = require("../contract/Clans.json");
 
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
+//const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 const seconds_since_epoch = () => {
   return Math.floor(Date.now() / 1000);
@@ -16,7 +16,7 @@ const seconds_since_epoch = () => {
 
 module.exports.handler = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
-  const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT, Y2123_ABI.abi, provider);
+  //const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT, Y2123_ABI.abi, provider);
   const clansContract = new ethers.Contract(process.env.CLANS_CONTRACT, CLANS_ABI.abi, provider);
 
   const addr = event.queryStringParameters.addr;
@@ -42,6 +42,7 @@ module.exports.handler = async (event) => {
   }
   stakedTokens.forEach((element) => console.log(element.toNumber()));
 
+  const tankCap = 10000;
   try {
     var [staked, claimable] = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);
     var serverTimestamp = seconds_since_epoch();
@@ -56,6 +57,9 @@ module.exports.handler = async (event) => {
       console.log(diff);
     });
     var amount = Math.floor(totalClaimableSeconds * ratePerSeconds);
+    if (amount > tankCap) {
+      amount = tankCap;
+    }
   } catch (e) {
     apiError._400(e);
   }

@@ -1,88 +1,76 @@
-const apiResponses = require('./common/apiHelper.js').apiResponses;
-const AWS = require('aws-sdk');
+const { ethers, utils } = require("ethers");
+const apiResponses = require("./common/apiHelper.js").apiResponses;
+const apiError = require("./common/apiHelper").apiError;
+const AWS = require("aws-sdk");
+const Y2123_ABI = require("../contract/Y2123.json");
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 const dailyRewardCalculator = (id) => {
   if (parseInt(id) < 500) {
-    return '4';
+    return "438";
   } else if (parseInt(id) < 3000) {
-    return '3';
+    return "197";
   } else if (parseInt(id) < 10000) {
-    return '2';
+    return "99";
   }
-  return '1';
+  return "0";
 };
 
 module.exports.handler = async (event) => {
-  /*
-  const provider = new ethers.providers.JsonRpcProvider(
-    process.env.ALCHEMY_API
-  );
-  const contract = new ethers.Contract(
-    process.env.Y2123_CONTRACT!,
-    Y2123_ABI.abi,
-    provider
-  );
+  const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
+  const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT, Y2123_ABI.abi, provider);
 
-  const id = event.queryStringParameters?.id;
-  if (!id) {
-    return apiResponses._400({ message: 'empty account id' });
+  const addr = event.queryStringParameters.addr;
+  if (!addr) {
+    return apiResponses._400({ message: "empty account id" });
   }
 
-  let tokens: any = [];
+  let tokens = [];
   try {
-    tokens = await contract.getTokenIDs(id);
-  } catch (e) {
-    if (typeof e === 'string') {
-      return apiResponses._400({ message: e.toUpperCase() });
-    } else if (e instanceof Error) {
-      return apiResponses._400({ message: e.message });
+    tokens = await y2123Contract.getTokenIDs(addr);
+    if (tokens.length < 1) {
+      return apiResponses._200({});
     }
+  } catch (e) {
+    apiError._400(e);
   }
 
-  if (tokens.length < 1) {
-    return apiResponses._200({});
-  }
-
-  let keys: Key[] = [];
-  let links: string[] = [];
-  let dailyRewards: string[] = [];
-  tokens.forEach((element: any) => {
-    keys.push(<Key>{ name: `#${String(element)}` });
-    links.push(
-      `https://opensea.io/assets/${process.env.Y2123_CONTRACT!}/` +
-        String(element)
-    );
+  let keys = [];
+  let links = [];
+  let dailyRewards = [];
+  tokens.forEach((element) => {
+    keys.push({ name: `Y2123#${String(element)}` });
+    links.push(`https://opensea.io/assets/${process.env.Y2123_CONTRACT}/` + String(element));
     dailyRewards.push(dailyRewardCalculator(String(element)));
   });
   console.log(keys);
 
-  const tableName = process.env.METADATA_TABLE!;
-  const params: AWS.DynamoDB.DocumentClient.BatchGetItemInput = {
+  const tableName = process.env.METADATA_TABLE;
+  const params = {
     RequestItems: {
-      [tableName!]: {
+      [tableName]: {
         Keys: keys,
-        ProjectionExpression: '#n, image',
-        ExpressionAttributeNames: { '#n': 'name' },
+        ProjectionExpression: "#n, image",
+        ExpressionAttributeNames: { "#n": "name" },
       },
     },
   };
   const results = await dynamoDb.batchGet(params).promise();
-  let [first] = Object.keys(results.Responses!);
-  const resultArray = results.Responses![first];
+  let [first] = Object.keys(results.Responses);
+  const resultArray = results.Responses[first];
   console.log(resultArray);
 
-  let unstakedNft: UnstakedNft[] = [];
-  resultArray.forEach((element: any, i: number) => {
-    unstakedNft.push(<UnstakedNft>{
+  let unstakedNft = [];
+  resultArray.forEach((element, i) => {
+    unstakedNft.push({
       name: element.name,
       image: element.image,
       link: links[i],
       dailyReward: dailyRewards[i],
     });
   });
-  console.log(unstakedNft);
-  */
-  return apiResponses._200("OK");
+  //console.log(unstakedNft);
+
+  return apiResponses._200({ unstakedNft: unstakedNft });
 };
