@@ -24,10 +24,41 @@ module.exports.handler = async (event) => {
     return apiResponses._400({ message: "empty account id" });
   }
 
-  let amount = 100;
-  let clanTokenClaimVal = 1;
-  let benificiaryOfTaxVal = "0x043f292c37e1De0B53951d1e478b59BC5358F359";
-  let oxgnTokenTaxVal = 1;
+  let clanTokenClaimVal = 0;
+  let benificiaryOfTaxVal = "0x0000000000000000000000000000000000000000";
+  let oxgnTokenTaxVal = 0;
+
+  let accountNonce = 0;
+  try {
+    accountNonce = await clansContract.accountNonce(addr);
+  } catch (e) {
+    apiError._400(e);
+  }
+
+  try {
+    var stakedTokens = await clansContract.stakedTokensOfOwner(process.env.Y2123_CONTRACT, addr);
+  } catch (e) {
+    apiError._400(e);
+  }
+  stakedTokens.forEach((element) => console.log(element.toNumber()));
+
+  try {
+    var [staked, claimable] = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);
+    var serverTimestamp = seconds_since_epoch();
+    //console.log(serverTimestamp);
+    let totalClaimableSeconds = 0;
+    const ratePerSeconds = 0.005;
+    claimable.forEach((element) => {
+      const diff = serverTimestamp - element.toNumber();
+      if (diff > 0) {
+        totalClaimableSeconds += diff;
+      }
+      console.log(diff);
+    });
+    var amount = Math.floor(totalClaimableSeconds * ratePerSeconds);
+  } catch (e) {
+    apiError._400(e);
+  }
 
   let donate = 0;
   let donateParam = event.queryStringParameters.donate;
@@ -39,28 +70,6 @@ module.exports.handler = async (event) => {
     }
     donate = parseInt(donateParam);
     amount = amount - donate;
-  }
-
-  let accountNonce = 0;
-  try {
-    accountNonce = await clansContract.accountNonce(addr);
-  } catch (e) {
-    apiError._400(e);
-  }
-
-  let stakedTokens;
-  try {
-    stakedTokens = await clansContract.stakedTokensOfOwner(process.env.Y2123_CONTRACT, addr);
-  } catch (e) {
-    apiError._400(e);
-  }
-  stakedTokens.forEach(element => console.log(element.toBigInt()));
-
-  try {
-    var [staked, claimable] = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);
-    claimable.forEach(element => console.log(element.toBigInt()));
-  } catch (e) {
-    apiError._400(e);
   }
 
   let domain = [
@@ -88,9 +97,6 @@ module.exports.handler = async (event) => {
     chainId: parseInt(process.env.CHAIN_ID, 10),
     verifyingContract: process.env.CLANS_CONTRACT,
   };
-
-  const serverTimestamp = seconds_since_epoch();
-  console.log(serverTimestamp);
 
   let claimData = {
     account: addr,
