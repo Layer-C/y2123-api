@@ -3,8 +3,8 @@ const apiResponses = require("./common/apiHelper.js").apiResponses;
 const apiError = require("./common/apiHelper").apiError;
 const AWS = require("aws-sdk");
 const Y2123_ABI = require("../contract/Y2123.json");
-
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const CLANS_ABI = require("../contract/Clans.json");
+//const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 const dailyRewardCalculator = (id) => {
   if (parseInt(id) < 500) {
@@ -20,32 +20,49 @@ const dailyRewardCalculator = (id) => {
 module.exports.handler = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
   const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT, Y2123_ABI.abi, provider);
+  const clansContract = new ethers.Contract(process.env.CLANS_CONTRACT, CLANS_ABI.abi, provider);
 
   const addr = event.queryStringParameters.addr;
   if (!addr) {
     return apiResponses._400({ message: "empty account id" });
   }
 
-  let tokens = [];
   try {
-    tokens = await y2123Contract.getTokenIDs(addr);
-    if (tokens.length < 1) {
-      return apiResponses._200({});
-    }
+    var tokens = await y2123Contract.getTokenIDs(addr);
   } catch (e) {
     apiError._400(e);
   }
-
-  let keys = [];
-  let links = [];
-  let dailyRewards = [];
+  let unstakedNft = [];
   tokens.forEach((element) => {
-    keys.push({ name: `Y2123#${String(element)}` });
-    links.push(`https://opensea.io/assets/${process.env.Y2123_CONTRACT}/` + String(element));
-    dailyRewards.push(dailyRewardCalculator(String(element)));
+    unstakedNft.push({ 
+      name: `Y2123#${String(element)}`,
+      image: `https://img-cs.y2123.io/${String(element)}.png`,
+      link: `https://opensea.io/assets/${process.env.Y2123_CONTRACT}/${String(element)}`,
+      dailyReward: dailyRewardCalculator(String(element)),
+    });
   });
-  console.log(keys);
 
+  try {
+    var stakedTokens = await clansContract.stakedTokensOfOwner(process.env.Y2123_CONTRACT, addr);
+  } catch (e) {
+    apiError._400(e);
+  }
+  let stakedNft = [];
+  stakedTokens.forEach((element) => {
+    stakedNft.push({
+      name: `Y2123#${String(element)}`,
+      image: `https://img-cs.y2123.io/${String(element)}.png`,
+      link: `https://opensea.io/assets/${process.env.Y2123_CONTRACT}/${String(element)}`,
+      dailyReward: dailyRewardCalculator(String(element)),
+    });
+  });
+
+  // Total CS nft, total OXGN earned, total Donated, Last claim earned, clanID, vault pending amount, vault cap(hardcode), 
+  
+  return apiResponses._200({ stakedNft: stakedNft, unstakedNft: unstakedNft });
+};
+
+/*
   const tableName = process.env.METADATA_TABLE;
   const params = {
     RequestItems: {
@@ -59,18 +76,17 @@ module.exports.handler = async (event) => {
   const results = await dynamoDb.batchGet(params).promise();
   let [first] = Object.keys(results.Responses);
   const resultArray = results.Responses[first];
-  console.log(resultArray);
+  //console.log(resultArray);
 
   let unstakedNft = [];
-  resultArray.forEach((element, i) => {
+  resultArray.forEach((element) => {
+    let id = element.name.replace("Y2123#", "");
     unstakedNft.push({
       name: element.name,
       image: element.image,
-      link: links[i],
-      dailyReward: dailyRewards[i],
+      link: `https://opensea.io/assets/${process.env.Y2123_CONTRACT}/${id}`,
+      dailyReward: dailyRewardCalculator(id),
     });
   });
   //console.log(unstakedNft);
-
-  return apiResponses._200({ unstakedNft: unstakedNft });
-};
+*/

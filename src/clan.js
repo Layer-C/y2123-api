@@ -1,0 +1,1 @@
+// clans total NFT staked and unique wallet, clan leader
