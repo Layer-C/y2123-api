@@ -1,6 +1,7 @@
 const { ethers, utils } = require("ethers");
 const apiResponses = require("./common/apiHelper.js").apiResponses;
 const apiError = require("./common/apiHelper").apiError;
+const getClaimable = require("./common/claimable").getClaimable;
 const AWS = require("aws-sdk");
 const Y2123_ABI = require("../contract/Y2123.json");
 const CLANS_ABI = require("../contract/Clans.json");
@@ -72,8 +73,16 @@ module.exports.handler = async (event) => {
     apiError._400(e);
   }
 
+  try {
+    var [amount, tankCap, serverTimestamp] = await getClaimable(clansContract, addr);
+  } catch (e) {
+    apiError._400(e);
+  }
+
   // Total CS nft, total OXGN earned, total Donated, Last claim earned, clanID, vault pending amount, vault cap(hardcode), 
-  return apiResponses._200({ 
+  return apiResponses._200({
+    claimable: amount,
+    tankCap: tankCap,
     totalCS: totalCS.toString(), 
     clanId: clanId.toString(), 
     lastClaim: lastClaim.toString(), 

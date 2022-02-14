@@ -1,18 +1,15 @@
 const { ethers, utils } = require("ethers");
 const apiResponses = require("./common/apiHelper").apiResponses;
 const apiError = require("./common/apiHelper").apiError;
-//const AWS = require("aws-sdk");
 const generateEip712Hash = require("./common/eip712signature").generateEip712Hash;
 const getClaimSecrets = require("./common/secretsManager").getClaimSecrets;
+const getClaimable = require("./common/claimable").getClaimable;
 
+//const AWS = require("aws-sdk");
 //const Y2123_ABI = require("../contract/Y2123.json");
 const CLANS_ABI = require("../contract/Clans.json");
 
 //const dynamoDb = new AWS.DynamoDB.DocumentClient();
-
-const seconds_since_epoch = () => {
-  return Math.floor(Date.now() / 1000);
-};
 
 module.exports.handler = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
@@ -28,9 +25,8 @@ module.exports.handler = async (event) => {
   let benificiaryOfTaxVal = "0x0000000000000000000000000000000000000000";
   let oxgnTokenTaxVal = 0;
 
-  let accountNonce = 0;
   try {
-    accountNonce = await clansContract.accountNonce(addr);
+    var accountNonce = await clansContract.accountNonce(addr);
   } catch (e) {
     apiError._400(e);
   }
@@ -42,24 +38,8 @@ module.exports.handler = async (event) => {
   }
   stakedTokens.forEach((element) => console.log(element.toNumber()));
 
-  const tankCap = 10000;
   try {
-    var [staked, claimable] = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);
-    var serverTimestamp = seconds_since_epoch();
-    //console.log(serverTimestamp);
-    let totalClaimableSeconds = 0;
-    const ratePerSeconds = 0.005;
-    claimable.forEach((element) => {
-      const diff = serverTimestamp - element.toNumber();
-      if (diff > 0) {
-        totalClaimableSeconds += diff;
-      }
-      console.log(diff);
-    });
-    var amount = Math.floor(totalClaimableSeconds * ratePerSeconds);
-    if (amount > tankCap) {
-      amount = tankCap;
-    }
+    var [amount, tankCap, serverTimestamp] = await getClaimable(clansContract, addr);
   } catch (e) {
     apiError._400(e);
   }
@@ -109,9 +89,10 @@ module.exports.handler = async (event) => {
     clanTokenClaim: clanTokenClaimVal,
     benificiaryOfTax: benificiaryOfTaxVal,
     oxgnTokenTax: oxgnTokenTaxVal,
-    nonce: accountNonce,
+    nonce: accountNonce.toNumber(),
     timestamp: serverTimestamp,
   };
+  //console.log(claimData);
 
   let eip712TypedData = {
     types: {
