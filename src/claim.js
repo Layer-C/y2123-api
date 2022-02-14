@@ -36,7 +36,7 @@ module.exports.handler = async (event) => {
   } catch (e) {
     apiError._400(e);
   }
-  stakedTokens.forEach((element) => console.log(element.toNumber()));
+  //stakedTokens.forEach((element) => console.log(element.toNumber()));
 
   try {
     var [amount, tankCap, serverTimestamp] = await getClaimable(clansContract, addr);

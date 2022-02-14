@@ -34,14 +34,16 @@ module.exports.handler = async (event) => {
     apiError._400(e);
   }
   let unstakedNft = [];
-  tokens.forEach((element) => {
-    unstakedNft.push({ 
-      name: `Y2123#${String(element)}`,
-      image: `https://img-cs.y2123.io/${String(element)}.png`,
-      link: `https://opensea.io/assets/${process.env.Y2123_CONTRACT}/${String(element)}`,
-      dailyReward: dailyRewardCalculator(String(element)),
+  if (tokens !== undefined && tokens.length > 0) {
+    tokens.forEach((element) => {
+      unstakedNft.push({
+        name: `Y2123#${String(element)}`,
+        image: `https://img-cs.y2123.io/${String(element)}.png`,
+        link: `https://opensea.io/assets/${process.env.Y2123_CONTRACT}/${String(element)}`,
+        dailyReward: dailyRewardCalculator(String(element)),
+      });
     });
-  });
+  }
 
   try {
     var stakedTokens = await clansContract.stakedTokensOfOwner(process.env.Y2123_CONTRACT, addr);
@@ -49,14 +51,16 @@ module.exports.handler = async (event) => {
     apiError._400(e);
   }
   let stakedNft = [];
-  stakedTokens.forEach((element) => {
-    stakedNft.push({
-      name: `Y2123#${String(element)}`,
-      image: `https://img-cs.y2123.io/${String(element)}.png`,
-      link: `https://opensea.io/assets/${process.env.Y2123_CONTRACT}/${String(element)}`,
-      dailyReward: dailyRewardCalculator(String(element)),
+  if (stakedTokens !== undefined && stakedTokens.length > 0) {
+    stakedTokens.forEach((element) => {
+      stakedNft.push({
+        name: `Y2123#${String(element)}`,
+        image: `https://img-cs.y2123.io/${String(element)}.png`,
+        link: `https://opensea.io/assets/${process.env.Y2123_CONTRACT}/${String(element)}`,
+        dailyReward: dailyRewardCalculator(String(element)),
+      });
     });
-  });
+  }
 
   const totalCS = unstakedNft.length + stakedNft.length;
 
@@ -79,19 +83,20 @@ module.exports.handler = async (event) => {
     apiError._400(e);
   }
 
-  // Total CS nft, total OXGN earned, total Donated, Last claim earned, clanID, vault pending amount, vault cap(hardcode), 
+  // Total CS nft, total OXGN earned, total Donated, Last claim earned, clanID, vault pending amount, vault cap(hardcode),
   return apiResponses._200({
     claimable: amount.toString(),
     tankCap: tankCap.toString(),
-    totalCS: totalCS.toString(), 
-    clanId: clanId.toString(), 
-    lastClaim: lastClaim.toString(), 
-    lastDonate: lastDonate.toString(), 
-    totalClaim: totalClaim.toString(), 
-    totalDonate: totalDonate.toString(), 
-    totalClanClaim: totalClanClaim.toString(), 
-    stakedNft: stakedNft, 
-    unstakedNft: unstakedNft });
+    totalCS: totalCS.toString(),
+    clanId: clanId.toString(),
+    lastClaim: lastClaim.toString(),
+    lastDonate: lastDonate.toString(),
+    totalClaim: totalClaim.toString(),
+    totalDonate: totalDonate.toString(),
+    totalClanClaim: totalClanClaim.toString(),
+    stakedNft: stakedNft,
+    unstakedNft: unstakedNft,
+  });
 };
 
 /*

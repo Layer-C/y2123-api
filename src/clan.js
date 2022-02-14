@@ -1,5 +1,6 @@
 const { ethers } = require("ethers");
 const apiResponses = require("./common/apiHelper.js").apiResponses;
+const apiError = require("./common/apiHelper").apiError;
 const CLANS_ABI = require("../contract/Clans.json");
 
 module.exports.handler = async (event) => {
