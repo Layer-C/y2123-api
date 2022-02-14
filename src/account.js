@@ -81,8 +81,8 @@ module.exports.handler = async (event) => {
 
   // Total CS nft, total OXGN earned, total Donated, Last claim earned, clanID, vault pending amount, vault cap(hardcode), 
   return apiResponses._200({
-    claimable: amount,
-    tankCap: tankCap,
+    claimable: amount.toString(),
+    tankCap: tankCap.toString(),
     totalCS: totalCS.toString(), 
     clanId: clanId.toString(), 
     lastClaim: lastClaim.toString(), 

@@ -83,6 +83,12 @@ functions:
       - httpApi:
           path: /asset-clans
           method: get
+  getClan:
+    handler: src/clan.handler
+    events:
+      - httpApi:
+          path: /clan
+          method: get
   getAccount:
     handler: src/account.handler
     events:
