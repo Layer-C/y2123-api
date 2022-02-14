@@ -57,9 +57,32 @@ module.exports.handler = async (event) => {
     });
   });
 
+  const totalCS = unstakedNft.length + stakedNft.length;
+
+  try {
+    var totalClaim = await clansContract.accountTotalClaim(addr);
+    var totalDonate = await clansContract.accountTotalDonate(addr);
+    var totalClanClaim = await clansContract.accountTotalClanClaim(addr);
+    const accountToLastClaim = await clansContract.accountToLastClaim(addr);
+    var lastClaim = accountToLastClaim[0];
+    var lastDonate = accountToLastClaim[1];
+    const clan = await clansContract.clanStructs(addr);
+    var clanId = clan[0];
+  } catch (e) {
+    apiError._400(e);
+  }
+
   // Total CS nft, total OXGN earned, total Donated, Last claim earned, clanID, vault pending amount, vault cap(hardcode), 
-  
-  return apiResponses._200({ stakedNft: stakedNft, unstakedNft: unstakedNft });
+  return apiResponses._200({ 
+    totalCS: totalCS.toString(), 
+    clanId: clanId.toString(), 
+    lastClaim: lastClaim.toString(), 
+    lastDonate: lastDonate.toString(), 
+    totalClaim: totalClaim.toString(), 
+    totalDonate: totalDonate.toString(), 
+    totalClanClaim: totalClanClaim.toString(), 
+    stakedNft: stakedNft, 
+    unstakedNft: unstakedNft });
 };
 
 /*
