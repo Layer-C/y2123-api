@@ -15,7 +15,7 @@ module.exports.handler = async (event) => {
   try {
     var accounts = await clansContract.getAccountsInClan(id);
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
 
   let totalStaked = 0;
@@ -28,7 +28,7 @@ module.exports.handler = async (event) => {
       }),
     );
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
 
   // clans total NFT staked and unique wallet, clan leader

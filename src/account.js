@@ -31,7 +31,7 @@ module.exports.handler = async (event) => {
   try {
     var tokens = await y2123Contract.getTokenIDs(addr);
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
   let unstakedNft = [];
   if (tokens !== undefined && tokens.length > 0) {
@@ -48,7 +48,7 @@ module.exports.handler = async (event) => {
   try {
     var stakedTokens = await clansContract.stakedTokensOfOwner(process.env.Y2123_CONTRACT, addr);
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
   let stakedNft = [];
   if (stakedTokens !== undefined && stakedTokens.length > 0) {
@@ -74,13 +74,13 @@ module.exports.handler = async (event) => {
     const clan = await clansContract.clanStructs(addr);
     var clanId = clan[0];
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
 
   try {
     var [amount, tankCap, serverTimestamp] = await getClaimable(clansContract, addr);
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
 
   // Total CS nft, total OXGN earned, total Donated, Last claim earned, clanID, vault pending amount, vault cap(hardcode),

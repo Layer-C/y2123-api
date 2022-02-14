@@ -27,21 +27,24 @@ module.exports.handler = async (event) => {
 
   try {
     var accountNonce = await clansContract.accountNonce(addr);
+    if (accountNonce === undefined) {
+      return apiError._400(e);
+    }
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
 
   try {
     var stakedTokens = await clansContract.stakedTokensOfOwner(process.env.Y2123_CONTRACT, addr);
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
   //stakedTokens.forEach((element) => console.log(element.toNumber()));
 
   try {
     var [amount, tankCap, serverTimestamp] = await getClaimable(clansContract, addr);
   } catch (e) {
-    apiError._400(e);
+    return apiError._400(e);
   }
 
   let donate = 0;
