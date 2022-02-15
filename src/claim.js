@@ -28,7 +28,7 @@ module.exports.handler = async (event) => {
   try {
     var accountNonce = await clansContract.accountNonce(addr);
     if (accountNonce === undefined) {
-      return apiError._400(e);
+      return apiError._400({ message: "error fetching nonce" });
     }
   } catch (e) {
     return apiError._400(e);

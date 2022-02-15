@@ -1,4 +1,4 @@
-const { ethers, utils } = require("ethers");
+const { ethers } = require("ethers");
 const apiResponses = require("./common/apiHelper.js").apiResponses;
 const apiError = require("./common/apiHelper").apiError;
 const getClaimable = require("./common/claimable").getClaimable;
@@ -84,19 +84,23 @@ module.exports.handler = async (event) => {
   }
 
   // Total CS nft, total OXGN earned, total Donated, Last claim earned, clanID, vault pending amount, vault cap(hardcode),
-  return apiResponses._200({
-    claimable: amount.toString(),
-    tankCap: tankCap.toString(),
-    totalCS: totalCS.toString(),
-    clanId: clanId.toString(),
-    lastClaim: lastClaim.toString(),
-    lastDonate: lastDonate.toString(),
-    totalClaim: totalClaim.toString(),
-    totalDonate: totalDonate.toString(),
-    totalClanClaim: totalClanClaim.toString(),
-    stakedNft: stakedNft,
-    unstakedNft: unstakedNft,
-  });
+  try {
+    return apiResponses._200({
+      claimable: amount.toString(),
+      tankCap: tankCap.toString(),
+      totalCS: totalCS.toString(),
+      clanId: clanId.toString(),
+      lastClaim: lastClaim.toString(),
+      lastDonate: lastDonate.toString(),
+      totalClaim: totalClaim.toString(),
+      totalDonate: totalDonate.toString(),
+      totalClanClaim: totalClanClaim.toString(),
+      stakedNft: stakedNft,
+      unstakedNft: unstakedNft,
+    });
+  } catch (e) {
+    return apiError._400(e);
+  }
 };
 
 /*

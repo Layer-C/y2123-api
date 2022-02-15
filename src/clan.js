@@ -14,6 +14,18 @@ module.exports.handler = async (event) => {
 
   try {
     var accounts = await clansContract.getAccountsInClan(id);
+    if (accounts === undefined) {
+      return apiError._400({ message: "error fetching accounts in clan" });
+    }
+  } catch (e) {
+    return apiError._400(e);
+  }
+
+  try {
+    var leader = await clansContract.clanToHighestOwnedAccount(id);
+    if (leader === undefined) {
+      return apiError._400({ message: "error fetching leader" });
+    }
   } catch (e) {
     return apiError._400(e);
   }
@@ -35,5 +47,6 @@ module.exports.handler = async (event) => {
   return apiResponses._200({
     uniqueAccount: accounts.length.toString(),
     totalStaked: totalStaked.toString(),
+    leader: leader,
   });
 };
