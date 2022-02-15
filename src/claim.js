@@ -34,15 +34,20 @@ module.exports.handler = async (event) => {
     return apiError._400(e);
   }
 
+  /*
   try {
     var stakedTokens = await clansContract.stakedTokensOfOwner(process.env.Y2123_CONTRACT, addr);
   } catch (e) {
     return apiError._400(e);
   }
-  //stakedTokens.forEach((element) => console.log(element.toNumber()));
+  stakedTokens.forEach((element) => console.log(element.toNumber()));
+  */
 
   try {
     var [amount, tankCap, serverTimestamp] = await getClaimable(clansContract, addr);
+    if (amount < 1) {
+      return apiError._400({ message: "nothing to claim" });
+    }
   } catch (e) {
     return apiError._400(e);
   }
