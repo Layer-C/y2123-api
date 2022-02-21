@@ -29,6 +29,8 @@ provider:
   runtime: nodejs14.x
   stage: ${opt:stage,'dev'}
   region: us-east-1
+  httpApi:
+    cors: true
   environment:
     METADATA_TABLE: "${self:provider.stage}-metadata"
     CLANS_METADATA_TABLE: "${self:provider.stage}-clans-metadata"
