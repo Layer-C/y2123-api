@@ -1,4 +1,4 @@
-const tankCap = 10000;
+const tankCap = 1200;
 
 const getClaimable = async (clansContract, addr) => {
   const [staked, claimable] = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);

@@ -9,11 +9,11 @@ const CLANS_ABI = require("../contract/Clans.json");
 
 const dailyRewardCalculator = (id) => {
   if (parseInt(id) < 500) {
-    return "438";
+    return "24";
   } else if (parseInt(id) < 3000) {
-    return "197";
+    return "20";
   } else if (parseInt(id) < 10000) {
-    return "99";
+    return "16";
   }
   return "0";
 };
