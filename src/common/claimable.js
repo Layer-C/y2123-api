@@ -3,7 +3,7 @@ const tankCap = 1200;
 const getClaimable = async (clansContract, addr) => {
   const [staked, claimable] = await clansContract.claimableOfOwner(process.env.Y2123_CONTRACT, addr);
   let totalClaimableSeconds = 0;
-  const ratePerSeconds = 0.005;
+  const ratePerSeconds = 1/3600;
   const serverTimestamp = seconds_since_epoch();
   let amount = 0;
 
