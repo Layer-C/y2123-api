@@ -9,6 +9,9 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-offline
 custom:
+  profiles:
+    dev: default
+    prod: prodProfile
   domain:
     dev: api-dev.y2123.io
     prod: api.y2123.io
@@ -28,7 +31,7 @@ provider:
   name: aws
   runtime: nodejs14.x
   stage: ${opt:stage,'dev'}
-  region: us-east-1
+  profile: ${self:custom.profiles.${sls:stage}}
   httpApi:
     cors: true
   environment:
@@ -49,30 +52,7 @@ provider:
           Resource:
             - "*"
 
-constructs:
-  commands:
-    type: queue
-    worker:
-      handler: src/discord.sender
-
 functions:
-  discordHello:
-    handler: src/discord.discordHandler
-    reservedConcurrency: 1
-    events:
-      - httpApi:
-          path: /discord
-          method: post
-  discordEndpoint:
-    handler: src/discord.endpoint
-    reservedConcurrency: 1
-    events:
-      - httpApi:
-          path: /discordEndpoint
-          method: post
-    environment:
-      QUEUE_URL: ${construct:commands.queueUrl}
-
   getAsset:
     handler: src/asset.handler
     events:
