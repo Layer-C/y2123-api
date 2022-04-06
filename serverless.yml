@@ -4,23 +4,25 @@ org: shankqr
 frameworkVersion: "3"
 
 plugins:
-  - serverless-lift
-  - serverless-domain-manager
   - serverless-dotenv-plugin
   - serverless-offline
+  - serverless-domain-manager
 custom:
   profiles:
     dev: default
     prod: prodProfile
   domain:
-    dev: api-dev.y2123.io
+    dev: dev-api.y2123.io
     prod: api.y2123.io
+  cert:
+    dev: "dev-api.y2123.io"
+    prod: "*.y2123.io"
   customDomain:
     http:
       domainName: ${self:custom.domain.${opt:stage, 'dev'}}
       basePath: ""
       stage: ${self:provider.stage}
-      certificateName: "*.y2123.io"
+      certificateName: ${self:custom.cert.${opt:stage, 'dev'}}
       createRoute53Record: true
       enabled: true
       securityPolicy: tls_1_2

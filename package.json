@@ -2,11 +2,11 @@
   "name": "y2123-api",
   "version": "1.0.0",
   "description": "",
-  "main": "discord.js",
+  "main": "account.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Shankar Nathan",
+  "author": "Shankar",
   "license": "ISC",
   "dependencies": {
     "aws-lambda": "^1.0.7",
@@ -23,7 +23,6 @@
     "serverless": "^3.11.0",
     "serverless-domain-manager": "^6.0.2",
     "serverless-dotenv-plugin": "^3.12.2",
-    "serverless-lift": "^1.14.0",
     "serverless-offline": "^8.5.0"
   }
 }
