@@ -102,32 +102,3 @@ module.exports.handler = async (event) => {
     return apiError._400(e);
   }
 };
-
-/*
-  const tableName = process.env.METADATA_TABLE;
-  const params = {
-    RequestItems: {
-      [tableName]: {
-        Keys: keys,
-        ProjectionExpression: "#n, image",
-        ExpressionAttributeNames: { "#n": "name" },
-      },
-    },
-  };
-  const results = await dynamoDb.batchGet(params).promise();
-  let [first] = Object.keys(results.Responses);
-  const resultArray = results.Responses[first];
-  //console.log(resultArray);
-
-  let unstakedNft = [];
-  resultArray.forEach((element) => {
-    let id = element.name.replace("Y2123#", "");
-    unstakedNft.push({
-      name: element.name,
-      image: element.image,
-      link: `https://opensea.io/assets/${process.env.Y2123_CONTRACT}/${id}`,
-      dailyReward: dailyRewardCalculator(id),
-    });
-  });
-  //console.log(unstakedNft);
-*/
