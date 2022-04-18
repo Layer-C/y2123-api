@@ -5,6 +5,7 @@ const getClaimable = require("./common/claimable").getClaimable;
 const AWS = require("aws-sdk");
 const Y2123_ABI = require("../contract/Y2123.json");
 const CLANS_ABI = require("../contract/Clans.json");
+const LAND_ABI = require("../contract/Land.json");
 //const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 const dailyRewardCalculator = (id) => {
@@ -22,6 +23,7 @@ module.exports.handler = async (event) => {
   const provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_API);
   const y2123Contract = new ethers.Contract(process.env.Y2123_CONTRACT, Y2123_ABI.abi, provider);
   const clansContract = new ethers.Contract(process.env.CLANS_CONTRACT, CLANS_ABI.abi, provider);
+  const landContract = new ethers.Contract(process.env.LAND_CONTRACT, LAND_ABI.abi, provider);
 
   const addr = event.queryStringParameters.addr;
   if (!addr) {
@@ -65,6 +67,22 @@ module.exports.handler = async (event) => {
   const totalCS = unstakedNft.length + stakedNft.length;
 
   try {
+    var landTokens = await landContract.getTokenIDs(addr);
+  } catch (e) {
+    return apiError._400(e);
+  }
+  let landNft = [];
+  if (landTokens !== undefined && landTokens.length > 0) {
+    landTokens.forEach((element) => {
+      landNft.push({
+        name: `LAND#${String(element)}`,
+        image: `https://img-land.y2123.io/${String(element)}.png`,
+        link: `https://opensea.io/assets/${process.env.LAND_CONTRACT}/${String(element)}`,
+      });
+    });
+  }
+
+  try {
     var totalClaim = await clansContract.accountTotalClaim(addr);
     var totalDonate = await clansContract.accountTotalDonate(addr);
     var totalClanClaim = await clansContract.accountTotalClanClaim(addr);
@@ -97,6 +115,7 @@ module.exports.handler = async (event) => {
       totalClanClaim: totalClanClaim.toString(),
       stakedNft: stakedNft,
       unstakedNft: unstakedNft,
+      landNft: landNft,
     });
   } catch (e) {
     return apiError._400(e);
